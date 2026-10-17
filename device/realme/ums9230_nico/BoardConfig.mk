@@ -1,6 +1,10 @@
 # Realme C35 RMX3511 / ums9230_nico
 # Recovery is packaged in vendor_boot; the stock kernel remains in boot.img.
 
+# The stock vendor ramdisk contains prebuilt ELF kernel modules (.ko). They must
+# remain in PRODUCT_COPY_FILES to preserve the matching stock recovery modules.
+BUILD_BROKEN_ELF_PREBUILT_PRODUCT_COPY_FILES := true
+
 DEVICE_PATH := device/realme/ums9230_nico
 
 TARGET_ARCH := arm64
