@@ -1,13 +1,6 @@
 name: Build TWRP vendor_boot (RMX3511)
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - '.github/workflows/build-twrp-vendor-boot.yml'
-      - 'tools/**'
-      - 'device/**'
   workflow_dispatch:
     inputs:
       vendor_boot_url:
@@ -30,7 +23,7 @@ jobs:
     timeout-minutes: 360
     steps:
       - name: Free runner disk space
-        uses: easimon/maximize-build-space@master
+        uses: easimon/maximize-build-space@v10
         with:
           root-reserve-mb: 512
           swap-size-mb: 1024
@@ -39,6 +32,14 @@ jobs:
           remove-codeql: 'true'
           remove-docker-images: 'true'
           remove-android: 'true'
+
+      - name: Cache TWRP repo metadata
+        uses: actions/cache@v4
+        with:
+          path: twrp-source/.repo
+          key: twrp-source-repo-${{ runner.os }}-twrp-12.1
+          restore-keys: |
+            twrp-source-repo-${{ runner.os }}-twrp-12.1
 
       - name: Install build dependencies
         run: |
@@ -159,8 +160,6 @@ jobs:
           set -eo pipefail
           cd "$GITHUB_WORKSPACE/twrp-source"
           export ALLOW_MISSING_DEPENDENCIES=true
-          # This tree has no kernel build; explicitly enable the vendor_boot image rules.
-          export BUILDING_VENDOR_BOOT_IMAGE=true
           source build/envsetup.sh
           lunch twrp_ums9230_nico-eng
           mka vendorbootimage -j2 2>&1 | tee "$GITHUB_WORKSPACE/build.log"
