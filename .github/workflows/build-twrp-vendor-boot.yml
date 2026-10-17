@@ -1,6 +1,13 @@
 name: Build TWRP vendor_boot (RMX3511)
 
 on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/build-twrp-vendor-boot.yml'
+      - 'tools/merge_vendor_boot_recovery.py'
+      - 'device/**'
   workflow_dispatch:
     inputs:
       vendor_boot_url:
@@ -160,17 +167,22 @@ jobs:
           mkdir -p "$GITHUB_WORKSPACE/build-output"
           test -f "$GITHUB_WORKSPACE/build.log" || touch "$GITHUB_WORKSPACE/build.log"
           OUT="$GITHUB_WORKSPACE/twrp-source/out/target/product/ums9230_nico"
-          if [ -d "$OUT" ]; then
-            find "$OUT" -maxdepth 1 -type f \( -name 'vendor_boot.img' -o -name 'vendorboot.img' -o -name 'recovery.img' \) -print -exec cp -f {} "$GITHUB_WORKSPACE/build-output/" \;
+          if [ -f "$OUT/vendor_boot.img" ]; then
+            cp -f "$OUT/vendor_boot.img" "$GITHUB_WORKSPACE/build-output/vendor_boot_twrp_raw.img"
           fi
           df -h
           ls -lh "$GITHUB_WORKSPACE/build-output" || true
           if [ "${{ job.status }}" = "success" ]; then
+            RAW_IMAGE="$GITHUB_WORKSPACE/build-output/vendor_boot_twrp_raw.img"
+            test -s "$RAW_IMAGE" || { echo "::error::Build command succeeded but raw vendor_boot.img is missing."; exit 1; }
             IMAGE="$GITHUB_WORKSPACE/build-output/vendor_boot.img"
-            test -s "$IMAGE" || { echo "::error::Build command succeeded but vendor_boot.img is missing."; exit 1; }
+            python3 "$GITHUB_WORKSPACE/device-tree-source/tools/merge_vendor_boot_recovery.py" \
+              "$GITHUB_WORKSPACE/vendor_boot_stock.img" "$RAW_IMAGE" --output "$IMAGE"
             IMAGE_SIZE="$(stat -c '%s' "$IMAGE")"
-            echo "Built vendor_boot.img size: $IMAGE_SIZE bytes"
-            test "$IMAGE_SIZE" -le 104857600 || { echo "::error::vendor_boot.img exceeds the 100 MiB partition size."; exit 1; }
+            echo "Merged vendor_boot.img size: $IMAGE_SIZE bytes"
+            test "$IMAGE_SIZE" -eq 104857600 || { echo "::error::Merged vendor_boot.img must preserve the exact 100 MiB partition image size."; exit 1; }
+            python3 "$GITHUB_WORKSPACE/device-tree-source/tools/audit_vendor_boot.py" \
+              "$IMAGE" -o "$GITHUB_WORKSPACE/build-output/merged-image-audit"
             sha256sum "$IMAGE"
           fi
       - name: Upload build output and logs
