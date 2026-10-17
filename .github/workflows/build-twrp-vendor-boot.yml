@@ -55,20 +55,33 @@ jobs:
           path: device-tree-source
 
       - name: Download and verify stock vendor_boot
+        timeout-minutes: 10
         env:
           VENDOR_BOOT_URL: ${{ inputs.vendor_boot_url || 'https://github.com/entitys-star/twrp_realme_c35/releases/download/assets/vendor_boot.img' }}
         run: |
           set -euo pipefail
-          curl --fail --location --retry 3 "$VENDOR_BOOT_URL" -o "$RUNNER_TEMP/vendor_boot.img"
+          STOCK_VENDOR_BOOT="$GITHUB_WORKSPACE/vendor_boot_stock.img"
+          echo "Downloading stock vendor_boot from: $VENDOR_BOOT_URL"
+          echo "Workspace and temp:"
+          printf 'GITHUB_WORKSPACE=%s\nRUNNER_TEMP=%s\n' "$GITHUB_WORKSPACE" "${RUNNER_TEMP:-unset}"
+          df -h "$GITHUB_WORKSPACE"
+          curl --fail --show-error --location --retry 5 --retry-all-errors \
+            --connect-timeout 30 --max-time 600 \
+            --output "$STOCK_VENDOR_BOOT" \
+            --write-out 'HTTP %{http_code}; downloaded %{size_download} bytes\n' \
+            "$VENDOR_BOOT_URL"
+          test -s "$STOCK_VENDOR_BOOT"
+          ACTUAL_SIZE="$(stat -c '%s' "$STOCK_VENDOR_BOOT")"
+          echo "Downloaded size: $ACTUAL_SIZE bytes"
+          test "$ACTUAL_SIZE" -eq 104857600
           echo "Downloaded SHA-256:"
-          sha256sum "$RUNNER_TEMP/vendor_boot.img"
-          echo "17e5c60be1414e56fabfaf50887aa1e2dc910e8dc6516ad2182fce182762c4b1  $RUNNER_TEMP/vendor_boot.img" | sha256sum --check -
-
+          sha256sum "$STOCK_VENDOR_BOOT"
+          echo "17e5c60be1414e56fabfaf50887aa1e2dc910e8dc6516ad2182fce182762c4b1  $STOCK_VENDOR_BOOT" | sha256sum --check -
       - name: Stage stock ramdisk and DTB
         run: |
           set -euo pipefail
           cd device-tree-source
-          python3 tools/prepare_vendor_ramdisk.py "$RUNNER_TEMP/vendor_boot.img"
+          python3 tools/prepare_vendor_ramdisk.py "$GITHUB_WORKSPACE/vendor_boot_stock.img"
           test -s device/realme/ums9230_nico/prebuilt/dtb.img
           test -s device/realme/ums9230_nico/recovery/root/lib/modules/modules.load.recovery
           git status --short
@@ -139,17 +152,25 @@ jobs:
           lunch twrp_ums9230_nico-eng
           mka vendorbootimage -j2 2>&1 | tee "$GITHUB_WORKSPACE/build.log"
 
-      - name: Collect build outputs
+      - name: Collect and validate build outputs
         if: always()
         run: |
+          set -euo pipefail
           mkdir -p "$GITHUB_WORKSPACE/build-output"
           OUT="$GITHUB_WORKSPACE/twrp-source/out/target/product/ums9230_nico"
           if [ -d "$OUT" ]; then
-            find "$OUT" -maxdepth 1 -type f \( -name 'vendor_boot.img' -o -name 'vendorboot.img' -o -name 'recovery.img' \) -print -exec cp -f {} "$GITHUB_WORKSPACE/build-output/" \;
+            find "$OUT" -maxdepth 1 -type f \\( -name 'vendor_boot.img' -o -name 'vendorboot.img' -o -name 'recovery.img' \\) -print -exec cp -f {} "$GITHUB_WORKSPACE/build-output/" \\;
           fi
           df -h
           ls -lh "$GITHUB_WORKSPACE/build-output" || true
-
+          if [ "${{ job.status }}" = "success" ]; then
+            IMAGE="$GITHUB_WORKSPACE/build-output/vendor_boot.img"
+            test -s "$IMAGE" || { echo "::error::Build command succeeded but vendor_boot.img is missing."; exit 1; }
+            IMAGE_SIZE="$(stat -c '%s' "$IMAGE")"
+            echo "Built vendor_boot.img size: $IMAGE_SIZE bytes"
+            test "$IMAGE_SIZE" -le 104857600 || { echo "::error::vendor_boot.img exceeds the 100 MiB partition size."; exit 1; }
+            sha256sum "$IMAGE"
+          fi
       - name: Upload build output and logs
         if: always()
         uses: actions/upload-artifact@v4
