@@ -1,13 +1,6 @@
 name: Build TWRP vendor_boot (RMX3511)
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - ".github/workflows/build-twrp-vendor-boot.yml"
-      - "device/realme/ums9230_nico/**"
-      - "tools/**"
   workflow_dispatch:
     inputs:
       vendor_boot_url:
@@ -24,6 +17,17 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 360
     steps:
+      - name: Free runner disk space
+        uses: easimon/maximize-build-space@master
+        with:
+          root-reserve-mb: 512
+          swap-size-mb: 1024
+          remove-dotnet: 'true'
+          remove-haskell: 'true'
+          remove-codeql: 'true'
+          remove-docker-images: 'true'
+          remove-android: 'true'
+
       - name: Install build dependencies
         run: |
           sudo apt-get update
@@ -36,17 +40,6 @@ jobs:
           java -version
           sudo apt-get clean
           sudo rm -rf /var/lib/apt/lists/*
-
-      - name: Free runner disk space
-        uses: easimon/maximize-build-space@master
-        with:
-          root-reserve-mb: 512
-          swap-size-mb: 1024
-          remove-dotnet: 'true'
-          remove-haskell: 'true'
-          remove-codeql: 'true'
-          remove-docker-images: 'true'
-          remove-android: 'true'
 
       - name: Check out device tree and tools
         uses: actions/checkout@v4
@@ -144,7 +137,7 @@ jobs:
                   "rsync -a --exclude=sdcard --exclude=vendor",
                   1,
               )
-          makefile.write_text("\\n".join(lines) + "\\n")
+          makefile.write_text("\n".join(lines) + "\n")
           print("Patched recovery-root rsync to preserve the staged vendor directory.")
           PY
 
