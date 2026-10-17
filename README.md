@@ -40,6 +40,9 @@ Checked items are completed by repository/static checks; unchecked items still n
 
 Each link below opens the **raw file contents**; the repository path is written beside it so the reviewer can identify the file.
 
+### Repository root
+- [`README.md`](https://raw.githubusercontent.com/entitys-star/twrp_realme_c35/main/README.md) — this checklist and complete source-file index.
+
 ### Build workflows
 - [`.github/workflows/build-twrp-vendor-boot.yml`](https://raw.githubusercontent.com/entitys-star/twrp_realme_c35/main/.github/workflows/build-twrp-vendor-boot.yml)
 - [`.github/workflows/merge-twrp-vendor-boot.yml`](https://raw.githubusercontent.com/entitys-star/twrp_realme_c35/main/.github/workflows/merge-twrp-vendor-boot.yml)
