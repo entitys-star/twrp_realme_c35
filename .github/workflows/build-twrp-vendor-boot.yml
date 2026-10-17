@@ -33,13 +33,12 @@ jobs:
           remove-docker-images: 'true'
           remove-android: 'true'
 
-      - name: Cache TWRP repo metadata
-        uses: actions/cache@v4
+      - name: Restore TWRP repo metadata
+        id: repo-cache
+        uses: actions/cache/restore@v4
         with:
           path: twrp-source/.repo
-          key: twrp-source-repo-${{ runner.os }}-twrp-12.1
-          restore-keys: |
-            twrp-source-repo-${{ runner.os }}-twrp-12.1
+          key: twrp-source-repo-${{ runner.os }}-twrp-12.1-v1
 
       - name: Install build dependencies
         run: |
@@ -114,6 +113,13 @@ jobs:
           repo sync -c --no-tags --optimized-fetch --prune -j2
           echo "Disk space after TWRP sync:"
           df -h "$GITHUB_WORKSPACE" "$RUNNER_TEMP"
+
+      - name: Save TWRP repo metadata
+        if: steps.repo-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: twrp-source/.repo
+          key: twrp-source-repo-${{ runner.os }}-twrp-12.1-v1
 
       - name: Install device tree
         run: |
