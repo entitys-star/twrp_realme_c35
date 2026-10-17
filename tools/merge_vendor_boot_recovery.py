@@ -180,6 +180,20 @@ def main() -> int:
         raise SystemExit("error: DTB changed during merge")
     if validated.bootconfig != stock.bootconfig:
         raise SystemExit("error: bootconfig changed during merge")
+
+    # Prove every stock non-recovery fragment remains byte-for-byte identical
+    # and retains its type/name/board_id metadata. These are the platform and
+    # any DLKM fragments required for ordinary Android boot.
+    original_non_recovery = [f for f in stock.fragments if not f.is_recovery]
+    merged_non_recovery = [f for f in validated.fragments if not f.is_recovery]
+    if len(original_non_recovery) != len(merged_non_recovery):
+        raise SystemExit("error: stock non-recovery fragment count changed")
+    for index, (original, actual) in enumerate(zip(original_non_recovery, merged_non_recovery)):
+        if original.payload != actual.payload:
+            raise SystemExit(f"error: stock fragment {index} payload changed ({original.name!r})")
+        if original.entry[8:] != actual.entry[8:]:
+            raise SystemExit(f"error: stock fragment {index} metadata changed ({original.name!r})")
+
     merged_recovery = [fragment for fragment in validated.fragments if fragment.is_recovery]
     if len(merged_recovery) != 1 or merged_recovery[0].payload != twrp_recovery.payload:
         raise SystemExit("error: TWRP recovery fragment failed post-merge validation")
