@@ -96,6 +96,23 @@ jobs:
           test -s "$GITHUB_WORKSPACE/twrp-source/device/realme/ums9230_nico/prebuilt/dtb.img"
           test -s "$GITHUB_WORKSPACE/twrp-source/device/realme/ums9230_nico/recovery/root/lib/modules/modules.load.recovery"
 
+      - name: Preserve staged vendor ramdisk files
+        run: |
+          set -euo pipefail
+          cd "$GITHUB_WORKSPACE/twrp-source"
+          python3 - <<'PY'
+          from pathlib import Path
+
+          makefile = Path("build/make/core/Makefile")
+          content = makefile.read_text()
+          needle = "rsync -a --exclude=sdcard --exclude=/root/sepolicy"
+          replacement = "rsync -a --exclude=sdcard --exclude=/root/vendor --exclude=/root/sepolicy"
+          if content.count(needle) != 1:
+              raise SystemExit("Expected recovery ramdisk rsync command was not found exactly once; refusing to patch an unknown build tree.")
+          makefile.write_text(content.replace(needle, replacement, 1))
+          print("Patched recovery ramdisk rsync to keep the staged /vendor directory instead of replacing it with the generic root/vendor symlink.")
+          PY
+
       - name: Build vendor_boot image
         run: |
           # Android's envsetup.sh references unset variables; nounset (-u) aborts before lunch.
