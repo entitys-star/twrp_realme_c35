@@ -90,3 +90,29 @@ The additional uploaded image was inspected locally on 2026-10-17:
 - The separately extracted copy of `focaltech_ft8756_spi_ts.ko` from the matching stock vendor_boot ramdisk is 396,854 bytes, SHA-256 `af39f96c7b2d847cd27f70b7553b8c8ce7ae08d0ba04dd5b15c1c0d2a084e546`. `modinfo` confirms FocalTech Driver Team, GPL v2, `vermagic 5.4.254-android12-9-g0b4c88190d9d-ab1584 SMP preempt mod_unload modversions aarch64`, no hard dependencies, and the `of:N*T*Cfocaltech,fts` alias.
 
 The key distinction remains: the FT8756-specific module is present, but the observed DTBO touchscreen node uses `compatible = "oppo,touchscreen"`, which resolves to `sprd_focaltech` according to the stock module aliases. Therefore the FT8756-specific module's presence alone is not evidence that it is the driver bound to this handset's active touchscreen.
+
+## Additional DTBO and recovery-module parsing (2026-10-18)
+
+The 8 MiB stock `dtbo.img` was parsed as an Android DT table (21 overlays). The table header entries all report `id=0`, `rev=0`, and zero custom IDs, so those table fields alone do not identify the active overlay.
+
+A flattened-device-tree parser was used to inspect the overlays' touchscreen nodes:
+
+- All 21 overlays contain `/fragment@7/__overlay__/touchscreen@0` with `compatible = "oppo,touchscreen"`.
+- The reported touch coordinate tuple is `<0 720 0 1600>` in each overlay.
+- The IRQ and reset GPIO tuples are `<0xffffffff 0x10 0>` and `<0xffffffff 0x92 0>` respectively.
+- Overlays 0–5 and 14–20 include a `novatek-mp-criteria-nvtpid` child. Overlays 6–13 instead include `novatek-mp-criteria-tm` and `novatek-mp-criteria-csot` children.
+- This proves the image carries multiple Novatek panel/criteria variants, but it does **not** establish which one the handset's bootloader selects. The common `oppo,touchscreen` compatible is not enough to identify the concrete controller.
+
+The extracted stock `modules.load.recovery` does list these modules, in this order:
+
+```text
+ilitek.ko
+chipone-tddi.ko
+focaltech_fp.ko
+focaltech_ft8756_spi_ts.ko
+sprd-nt36xxx.ko
+sprd-focaltech.ko
+himax_mmi.ko
+```
+
+The stock module dependency file reports no dependencies for `focaltech_ft8756_spi_ts.ko`, while `sprd-focaltech.ko` depends on `sprd-nt36xxx.ko` and several display/platform modules. The recovery module list can therefore be reused, but successful insertion and matching with the active overlay must still be confirmed on-device. Do not remove modules based only on their names.
