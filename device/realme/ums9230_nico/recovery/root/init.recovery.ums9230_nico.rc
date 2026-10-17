@@ -1,0 +1,6 @@
+# Intentionally minimal TWRP board init.
+#
+# The stock init.recovery.ums9230_nico.rc imports init.recovery.common.rc,
+# which starts the stock Unisoc USB/configfs gadget and vendor services. That
+# conflicts with TWRP's own init.recovery.usb.rc. Keep this board-specific file
+# present for init's ro.hardware import, but let TWRP own service and USB setup.
