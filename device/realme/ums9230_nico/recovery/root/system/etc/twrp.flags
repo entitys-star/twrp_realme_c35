@@ -1,0 +1,14 @@
+# TWRP-specific partition flags supplement the stock Android v2 recovery.fstab.
+# The stock fstab remains authoritative for filesystem types and /data encryption.
+# No standalone recovery partition exists on RMX3511; recovery is in vendor_boot.
+
+/boot emmc /dev/block/by-name/boot flags=display="Boot";backup=1;flashimg=1;slotselect
+/vendor_boot emmc /dev/block/by-name/vendor_boot flags=display="Vendor Boot";backup=1;slotselect
+/dtbo emmc /dev/block/by-name/dtbo flags=display="DTBO";backup=1;flashimg=1;slotselect
+/vbmeta emmc /dev/block/by-name/vbmeta flags=display="VBMeta";backup=1;slotselect
+/vbmeta_system emmc /dev/block/by-name/vbmeta_system flags=display="VBMeta System";backup=1;slotselect
+/vbmeta_vendor emmc /dev/block/by-name/vbmeta_vendor flags=display="VBMeta Vendor";backup=1;slotselect
+/metadata ext4 /dev/block/by-name/metadata flags=display="Metadata";backup=1
+/persist ext4 /dev/block/by-name/persist flags=display="Persist";backup=1
+/misc emmc /dev/block/by-name/misc flags=display="Misc";backup=1
+/storage/sdcard0 vfat /dev/block/mmcblk1p1 /dev/block/mmcblk1 flags=display="Micro SD";storage;wipeingui;removable
