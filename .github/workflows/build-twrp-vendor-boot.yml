@@ -1,11 +1,19 @@
 name: Build TWRP vendor_boot (RMX3511)
 
 on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/build-twrp-vendor-boot.yml"
+      - "device/realme/ums9230_nico/**"
+      - "tools/**"
   workflow_dispatch:
     inputs:
       vendor_boot_url:
         description: "Direct URL to the stock RMX3511T2_13.F.73 vendor_boot.img release asset"
-        required: true
+        required: false
+        default: "https://github.com/entitys-star/twrp_realme_c35/releases/download/assets/vendor_boot.img"
         type: string
 
 permissions:
@@ -54,7 +62,7 @@ jobs:
 
       - name: Download and verify stock vendor_boot
         env:
-          VENDOR_BOOT_URL: ${{ inputs.vendor_boot_url }}
+          VENDOR_BOOT_URL: ${{ inputs.vendor_boot_url || 'https://github.com/entitys-star/twrp_realme_c35/releases/download/assets/vendor_boot.img' }}
         run: |
           set -euo pipefail
           curl --fail --location --retry 3 "$VENDOR_BOOT_URL" -o "$RUNNER_TEMP/vendor_boot.img"
