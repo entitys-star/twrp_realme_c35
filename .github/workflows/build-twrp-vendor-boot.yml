@@ -80,11 +80,19 @@ jobs:
       - name: Stage stock ramdisk and DTB
         run: |
           set -euo pipefail
+          # The runner's /tmp filesystem is small; put the expanded 54 MiB ramdisk
+          # and its extracted files on the large workspace volume instead.
+          mkdir -p "$GITHUB_WORKSPACE/tmp"
+          export TMPDIR="$GITHUB_WORKSPACE/tmp"
+          echo "Disk space before ramdisk extraction:"
+          df -h / /tmp "$GITHUB_WORKSPACE"
           cd device-tree-source
           python3 tools/prepare_vendor_ramdisk.py "$GITHUB_WORKSPACE/vendor_boot_stock.img"
           test -s device/realme/ums9230_nico/prebuilt/dtb.img
           test -s device/realme/ums9230_nico/recovery/root/lib/modules/modules.load.recovery
           git status --short
+          echo "Disk space after ramdisk extraction:"
+          df -h / /tmp "$GITHUB_WORKSPACE"
 
       - name: Initialize TWRP source
         run: |
@@ -157,9 +165,10 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p "$GITHUB_WORKSPACE/build-output"
+          test -f "$GITHUB_WORKSPACE/build.log" || touch "$GITHUB_WORKSPACE/build.log"
           OUT="$GITHUB_WORKSPACE/twrp-source/out/target/product/ums9230_nico"
           if [ -d "$OUT" ]; then
-            find "$OUT" -maxdepth 1 -type f \\( -name 'vendor_boot.img' -o -name 'vendorboot.img' -o -name 'recovery.img' \\) -print -exec cp -f {} "$GITHUB_WORKSPACE/build-output/" \\;
+            find "$OUT" -maxdepth 1 -type f \( -name 'vendor_boot.img' -o -name 'vendorboot.img' -o -name 'recovery.img' \) -print -exec cp -f {} "$GITHUB_WORKSPACE/build-output/" \;
           fi
           df -h
           ls -lh "$GITHUB_WORKSPACE/build-output" || true
