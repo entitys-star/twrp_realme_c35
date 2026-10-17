@@ -1,6 +1,13 @@
 name: Build TWRP vendor_boot (RMX3511)
 
 on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/build-twrp-vendor-boot.yml'
+      - 'tools/**'
+      - 'device/**'
   workflow_dispatch:
     inputs:
       vendor_boot_url:
