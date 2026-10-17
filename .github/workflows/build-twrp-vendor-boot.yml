@@ -12,6 +12,11 @@ on:
 permissions:
   contents: read
 
+# A full source build is expensive; never run multiple identical builds at once.
+concurrency:
+  group: twrp-rmx3511-build
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-22.04
