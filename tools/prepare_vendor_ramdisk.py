@@ -2,7 +2,8 @@
 """Stage the stock Unisoc vendor runtime required by a TWRP vendor_boot tree.
 
 This is intentionally not a full device-tree generator. It preserves required
-vendor files and excludes stock init.rc so it cannot replace TWRP's init.
+vendor runtime, module, ueventd and SELinux files, but leaves init/service and USB
+configuration under TWRP control rather than importing the stock recovery init.
 Requires Python lz4, cpio, and tools/extract_vendor_boot_ramdisk.py.
 """
 from __future__ import annotations
