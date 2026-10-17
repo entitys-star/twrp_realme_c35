@@ -55,7 +55,7 @@ BOARD_HAS_LARGE_FILESYSTEM := true
 # The stock recovery ramdisk supplies modules.load.recovery and the matching
 # 5.4.254 Android kernel modules. Load only modules listed by that stock file;
 # the expression resolves to an empty list until the runtime has been staged.
-TW_LOAD_VENDOR_MODULES := $(shell cd $(DEVICE_PATH)/recovery/root/lib/modules 2>/dev/null && for module in $(cat modules.load.recovery 2>/dev/null); do [ -f "$module" ] && printf "%s " "$module"; done)
+TW_LOAD_VENDOR_MODULES := "$(shell cd $(DEVICE_PATH)/recovery/root/lib/modules 2>/dev/null && while IFS= read -r module; do [ -f "$module" ] && printf "%s " "$module"; done < modules.load.recovery)"
 TW_LOAD_VENDOR_BOOT_MODULES := true
 
 TWRP_INCLUDE_LOGCAT := true
