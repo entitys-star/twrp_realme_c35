@@ -104,7 +104,8 @@ jobs:
 
       - name: Build vendor_boot image
         run: |
-          set -euo pipefail
+          # Android's envsetup.sh references unset variables; nounset (-u) aborts before lunch.
+          set -eo pipefail
           cd "$GITHUB_WORKSPACE/twrp-source"
           export ALLOW_MISSING_DEPENDENCIES=true
           source build/envsetup.sh
