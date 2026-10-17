@@ -12,6 +12,8 @@ A source-built TWRP image was produced and the first on-device test bootlooped. 
 - The stock `dtbo.img` has 21 FDT overlays; the observed touch coordinate space is 720 × 1600.
 - The stock recovery ramdisk includes the touchscreen module set, including `sprd-focaltech.ko` and `focaltech_ft8756_spi_ts.ko`; DTBO candidates use the `oppo,touchscreen` compatible, so the active driver/panel still needs confirmation. See [touch-module audit](docs/recovery/RMX3511-touch-module-audit.md).
 - The stock recovery module list has been checked against the staged ramdisk: all 157 listed modules are present, and stock `init.rc` is excluded. The device config now derives TWRP's module-load list from `modules.load.recovery`.
+- Stock `init.recovery.common.rc` is also excluded: it starts a competing Unisoc configfs/USB setup and stock vendor services. A minimal device-specific init file leaves service/USB setup to TWRP.
+- TWRP-specific backup flags now expose `boot`, `vendor_boot`, `dtbo`, vbmeta partitions, `metadata`, `persist`, `misc` and microSD; their behavior has not yet been verified in a running recovery.
 - AVB/rollback configuration, data decryption, and recovery boot behavior remain to be validated.
 
 ## Research
