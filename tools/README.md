@@ -12,7 +12,8 @@ python3 tools/prepare_vendor_ramdisk.py /path/to/vendor_boot.img
 The staging script now performs both required extraction steps:
 
 - writes the complete DTB payload to `device/realme/ums9230_nico/prebuilt/dtb.img`, preserving the Android DT table if present;
-- populates `device/realme/ums9230_nico/recovery/root` with the reviewed stock recovery runtime, including the module files and recovery module-load list, while refusing to copy the stock `init.rc`.
+- populates `device/realme/ums9230_nico/recovery/root` with stock modules, module-load/dependency lists, ueventd rules and SELinux policy files;
+- deliberately does **not** copy the stock `init.recovery.*.rc` scripts, because the stock common script creates a competing Unisoc USB gadget and starts stock vendor services. The device tree supplies a minimal `init.recovery.ums9230_nico.rc`, and TWRP retains control of recovery services and USB.
 
 For the inspected RMX3511T2_13.F.73 image, the DTB payload is at offset 24,698,880, size 163,976 bytes, and begins with Android DT table magic `d7b7ab1e`.
 
