@@ -1,6 +1,6 @@
 # Realme C35 RMX3511 — TWRP / Recovery research
 
-> Status: reconnaissance only. No TWRP image has been built or tested. Do not flash an image based on these notes.
+> Status: the TWRP source build completed. The first on-device test used the unmerged generated image and bootlooped. The repository now has a stock-preserving `vendor_boot` merger and TWRP-specific partition flags; the corrected image still needs an on-device boot test. Kernel/DTB/stock platform data are retained, while recovery behavior, touch, AVB and decryption remain unverified.
 
 ## Scope and separation from Nyx
 
