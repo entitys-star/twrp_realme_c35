@@ -24,6 +24,25 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 360
     steps:
+      - name: Check out device tree and tools
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+          path: device-tree-source
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            bc bison build-essential ccache curl cpio flex g++-multilib gcc-multilib \
+            git git-lfs gnupg gperf imagemagick lib32ncurses-dev lib32readline-dev \
+            lib32z1-dev libelf-dev liblz4-tool libncurses-dev libsdl1.2-dev libssl-dev \
+            libxml2-utils lz4 openjdk-11-jdk pngcrush python3 python3-lz4 rsync \
+            schedtool squashfs-tools unzip x11proto-core-dev xsltproc zip zlib1g-dev
+          java -version
+          sudo apt-get clean
+          sudo rm -rf /var/lib/apt/lists/*
+
       - name: Free runner disk space
         uses: easimon/maximize-build-space@master
         with:
@@ -34,31 +53,6 @@ jobs:
           remove-codeql: 'true'
           remove-docker-images: 'true'
           remove-android: 'true'
-
-      - name: Check out device tree and tools
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.ref_name }}
-          path: device-tree-source
-
-      - name: Install build dependencies
-        run: |
-          # The runner's root filesystem can be full while the workspace has a separate large volume.
-          # Put APT downloads and package indexes on the workspace volume.
-          sudo rm -rf /var/cache/apt/archives
-          sudo mkdir -p "$GITHUB_WORKSPACE/.apt-archives/partial"
-          sudo ln -s "$GITHUB_WORKSPACE/.apt-archives" /var/cache/apt/archives
-          sudo rm -rf /var/lib/apt/lists
-          sudo mkdir -p "$GITHUB_WORKSPACE/.apt-lists/partial"
-          sudo ln -s "$GITHUB_WORKSPACE/.apt-lists" /var/lib/apt/lists
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends \
-            bc bison build-essential ccache curl cpio flex g++-multilib gcc-multilib \
-            git git-lfs gnupg gperf imagemagick lib32ncurses-dev lib32readline-dev \
-            lib32z1-dev libelf-dev liblz4-tool libncurses-dev libsdl1.2-dev libssl-dev \
-            libxml2-utils lz4 openjdk-11-jdk pngcrush python3 python3-lz4 rsync \
-            schedtool squashfs-tools unzip x11proto-core-dev xsltproc zip zlib1g-dev
-          java -version
 
       - name: Download and verify stock vendor_boot
         env:
