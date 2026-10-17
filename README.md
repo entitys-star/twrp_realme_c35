@@ -27,6 +27,7 @@ Checked items are completed by repository/static checks; unchecked items still n
 - [x] Exclude stock recovery init scripts that conflict with TWRP's USB/service setup.
 - [x] Add TWRP partition flags and Android 13 FBE build options (runtime behavior remains unverified).
 - [x] Derive the vendor module list with a Make-safe Python expression that preserves `modules.load.recovery` order, and set screen dimensions to 1080 × 2408 from the supplied boot command line.
+- [x] Set `PRODUCT_SHIPPING_API_LEVEL := 30` to match the device's first API level.
 - [x] Restrict builds to manual `workflow_dispatch`, remove the obsolete separate merge workflow, and switch disk-space action to `@v10`.
 - [x] Add a GitHub Actions cache for TWRP repo metadata; remove the redundant `BUILDING_VENDOR_BOOT_IMAGE` export.
 - [ ] Build the latest revision successfully and inspect the final merged artifact.
