@@ -1,6 +1,6 @@
 # TWRP device tree — Realme C35 (RMX3511)
 
-**Status: incomplete bring-up scaffold. No image has been built or boot-tested.**
+**Status: source build completed; first on-device test of the unmerged image bootlooped. A corrected stock-preserving vendor_boot merge is implemented, but the corrected image has not been boot-tested.**
 
 Target firmware: `RMX3511T2_13.F.73`, Android 13, device identity `ums9230_nico`.
 
