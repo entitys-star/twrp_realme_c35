@@ -33,7 +33,7 @@ jobs:
           remove-haskell: 'true'
           remove-codeql: 'true'
           remove-docker-images: 'true'
-          remove-large-packages: 'true'
+          remove-android: 'true'
 
       - name: Check out device tree and tools
         uses: actions/checkout@v4
@@ -52,7 +52,7 @@ jobs:
           sudo mkdir -p "$GITHUB_WORKSPACE/.apt-lists/partial"
           sudo ln -s "$GITHUB_WORKSPACE/.apt-lists" /var/lib/apt/lists
           sudo apt-get update
-          sudo apt-get install -y \
+          sudo apt-get install -y --no-install-recommends \
             bc bison build-essential ccache curl cpio flex g++-multilib gcc-multilib \
             git git-lfs gnupg gperf imagemagick lib32ncurses-dev lib32readline-dev \
             lib32z1-dev libelf-dev liblz4-tool libncurses-dev libsdl1.2-dev libssl-dev \
