@@ -82,26 +82,30 @@ jobs:
       - name: Initialize TWRP source
         run: |
           set -euo pipefail
-          mkdir -p "$RUNNER_TEMP/twrp"
-          cd "$RUNNER_TEMP/twrp"
+          mkdir -p "$GITHUB_WORKSPACE/twrp-source"
+          cd "$GITHUB_WORKSPACE/twrp-source"
+          echo "Disk space before TWRP sync:"
+          df -h "$GITHUB_WORKSPACE" "$RUNNER_TEMP"
           curl --fail --location https://storage.googleapis.com/git-repo-downloads/repo -o repo
           chmod +x repo
           sudo install repo /usr/local/bin/repo
           repo init --depth=1 -u https://github.com/minimal-manifest-twrp/platform_manifest_twrp_aosp.git -b twrp-12.1
           repo sync -c --no-tags --optimized-fetch --prune -j2
+          echo "Disk space after TWRP sync:"
+          df -h "$GITHUB_WORKSPACE" "$RUNNER_TEMP"
 
       - name: Install device tree
         run: |
           set -euo pipefail
-          mkdir -p "$RUNNER_TEMP/twrp/device/realme"
-          cp -a device-tree-source/device/realme/ums9230_nico "$RUNNER_TEMP/twrp/device/realme/ums9230_nico"
-          test -s "$RUNNER_TEMP/twrp/device/realme/ums9230_nico/prebuilt/dtb.img"
-          test -s "$RUNNER_TEMP/twrp/device/realme/ums9230_nico/recovery/root/lib/modules/modules.load.recovery"
+          mkdir -p "$GITHUB_WORKSPACE/twrp-source/device/realme"
+          cp -a device-tree-source/device/realme/ums9230_nico "$GITHUB_WORKSPACE/twrp-source/device/realme/ums9230_nico"
+          test -s "$GITHUB_WORKSPACE/twrp-source/device/realme/ums9230_nico/prebuilt/dtb.img"
+          test -s "$GITHUB_WORKSPACE/twrp-source/device/realme/ums9230_nico/recovery/root/lib/modules/modules.load.recovery"
 
       - name: Build vendor_boot image
         run: |
           set -euo pipefail
-          cd "$RUNNER_TEMP/twrp"
+          cd "$GITHUB_WORKSPACE/twrp-source"
           export ALLOW_MISSING_DEPENDENCIES=true
           source build/envsetup.sh
           lunch twrp_ums9230_nico-eng
@@ -111,7 +115,7 @@ jobs:
         if: always()
         run: |
           mkdir -p "$GITHUB_WORKSPACE/build-output"
-          OUT="$RUNNER_TEMP/twrp/out/target/product/ums9230_nico"
+          OUT="$GITHUB_WORKSPACE/twrp-source/out/target/product/ums9230_nico"
           if [ -d "$OUT" ]; then
             find "$OUT" -maxdepth 1 -type f \( -name 'vendor_boot.img' -o -name 'vendorboot.img' -o -name 'recovery.img' \) -print -exec cp -f {} "$GITHUB_WORKSPACE/build-output/" \;
           fi
