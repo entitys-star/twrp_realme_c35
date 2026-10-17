@@ -133,6 +133,8 @@ jobs:
           set -eo pipefail
           cd "$GITHUB_WORKSPACE/twrp-source"
           export ALLOW_MISSING_DEPENDENCIES=true
+          # This tree has no kernel build; explicitly enable the vendor_boot image rules.
+          export BUILDING_VENDOR_BOOT_IMAGE=true
           source build/envsetup.sh
           lunch twrp_ums9230_nico-eng
           mka vendorbootimage -j2 2>&1 | tee "$GITHUB_WORKSPACE/build.log"
