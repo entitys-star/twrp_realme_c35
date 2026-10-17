@@ -15,8 +15,12 @@ import sys
 import tempfile
 from pathlib import Path
 
+# Do not import the stock recovery init scripts into TWRP. In particular,
+# init.recovery.common.rc starts a second Unisoc configfs/USB gadget setup and
+# stock recovery services that conflict with TWRP's own init. The device tree
+# supplies a minimal init.recovery.ums9230_nico.rc instead.
 ROOT_FILES = re.compile(
-    r"^(?:sepolicy|.*_contexts|init\.recovery\..*\.rc|ueventd.*\.rc|.*\.sh)$"
+    r"^(?:sepolicy|.*_contexts|ueventd.*\.rc|.*\.sh)$"
 )
 
 
@@ -105,6 +109,11 @@ def main() -> int:
 
         if (target / "init.rc").exists():
             raise SystemExit("error: target contains init.rc; refusing to leave stock init.rc in TWRP root")
+        # A stock common recovery init was intentionally not staged: it
+        # configures its own USB gadget and launches stock vendor services.
+        board_init = target / "init.recovery.ums9230_nico.rc"
+        if not board_init.is_file():
+            raise SystemExit("error: missing device-tree-owned init.recovery.ums9230_nico.rc")
         if not (target / "system/etc/recovery.fstab").is_file():
             raise SystemExit("error: stock recovery.fstab was not staged")
         load_list = target / "lib/modules/modules.load.recovery"
