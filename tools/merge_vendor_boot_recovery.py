@@ -180,8 +180,9 @@ def main() -> int:
         raise SystemExit("error: DTB changed during merge")
     if validated.bootconfig != stock.bootconfig:
         raise SystemExit("error: bootconfig changed during merge")
-    if validated.fragments[-1].payload != twrp_recovery.payload:
-        raise SystemExit("error: TWRP recovery fragment is not last in the merged table")
+    merged_recovery = [fragment for fragment in validated.fragments if fragment.is_recovery]
+    if len(merged_recovery) != 1 or merged_recovery[0].payload != twrp_recovery.payload:
+        raise SystemExit("error: TWRP recovery fragment failed post-merge validation")
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_bytes(output)
