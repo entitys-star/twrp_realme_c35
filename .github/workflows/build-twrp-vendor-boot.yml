@@ -104,13 +104,27 @@ jobs:
           from pathlib import Path
 
           makefile = Path("build/make/core/Makefile")
-          content = makefile.read_text()
-          needle = "rsync -a --exclude=sdcard --exclude=/root/sepolicy"
-          replacement = "rsync -a --exclude=sdcard --exclude=/root/vendor --exclude=/root/sepolicy"
-          if content.count(needle) != 1:
-              raise SystemExit("Expected recovery ramdisk rsync command was not found exactly once; refusing to patch an unknown build tree.")
-          makefile.write_text(content.replace(needle, replacement, 1))
-          print("Patched recovery ramdisk rsync to keep the staged /vendor directory instead of replacing it with the generic root/vendor symlink.")
+          lines = makefile.read_text().splitlines()
+          matches = [
+              i for i, line in enumerate(lines)
+              if "rsync -a --exclude=sdcard" in line
+              and "$(TARGET_ROOT_OUT)" in line
+              and "$(TARGET_RECOVERY_OUT)" in line
+          ]
+          if len(matches) != 1:
+              raise SystemExit(
+                  f"Expected exactly one recovery-root rsync command; found {len(matches)}. "
+                  "Refusing to patch an unknown build tree."
+              )
+          i = matches[0]
+          if "--exclude=vendor" not in lines[i]:
+              lines[i] = lines[i].replace(
+                  "rsync -a --exclude=sdcard",
+                  "rsync -a --exclude=sdcard --exclude=vendor",
+                  1,
+              )
+          makefile.write_text("\\n".join(lines) + "\\n")
+          print("Patched recovery-root rsync to preserve the staged vendor directory.")
           PY
 
       - name: Build vendor_boot image
