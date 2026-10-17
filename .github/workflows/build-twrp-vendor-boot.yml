@@ -35,6 +35,14 @@ jobs:
 
       - name: Install build dependencies
         run: |
+          # The runner's root filesystem can be full while the workspace has a separate large volume.
+          # Put APT downloads and package indexes on the workspace volume.
+          sudo rm -rf /var/cache/apt/archives
+          sudo mkdir -p "$GITHUB_WORKSPACE/.apt-archives/partial"
+          sudo ln -s "$GITHUB_WORKSPACE/.apt-archives" /var/cache/apt/archives
+          sudo rm -rf /var/lib/apt/lists
+          sudo mkdir -p "$GITHUB_WORKSPACE/.apt-lists/partial"
+          sudo ln -s "$GITHUB_WORKSPACE/.apt-lists" /var/lib/apt/lists
           sudo apt-get update
           sudo apt-get install -y \
             bc bison build-essential ccache curl cpio flex g++-multilib gcc-multilib \
