@@ -24,12 +24,6 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 360
     steps:
-      - name: Check out device tree and tools
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.ref_name }}
-          path: device-tree-source
-
       - name: Install build dependencies
         run: |
           sudo apt-get update
@@ -53,6 +47,12 @@ jobs:
           remove-codeql: 'true'
           remove-docker-images: 'true'
           remove-android: 'true'
+
+      - name: Check out device tree and tools
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+          path: device-tree-source
 
       - name: Download and verify stock vendor_boot
         env:
