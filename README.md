@@ -12,7 +12,8 @@ A source-built TWRP image was produced and the first on-device test bootlooped. 
 - The stock `dtbo.img` has 21 FDT overlays. The supplied boot command line identifies `androidboot.dtbo_idx=12`, `lcd_name=lcd_NT36672C_csot_mipi_hd` and `lcd_size=2408x1080`; the build config now sets TWRP's logical screen size to 1080 × 2408.
 - Overlay 12 belongs to the Novatek/CSOT candidate group (overlays 6–13); `sprd-nt36xxx.ko` is the leading touchscreen-driver candidate. The exact active overlay/driver and backlight path still require on-device confirmation. See [touch-module audit](docs/recovery/RMX3511-touch-module-audit.md).
 - The stock recovery module list has been checked against the staged ramdisk: all 157 listed modules are present, and stock `init.rc` is excluded. The device config now derives TWRP's module-load list from `modules.load.recovery`.
-- Stock `init.recovery.common.rc` is also excluded: it starts a competing Unisoc configfs/USB setup and stock vendor services. A minimal device-specific init file leaves service/USB setup to TWRP.
+- Stock `init.recovery.common.rc` is also excluded: it starts a competing Unisoc configfs/USB setup and stock vendor services. A minimal device-specific init file leaves service/USB setup to TWRP. The board init now sets `sys.usb.configfs=1` and `sys.usb.controller=musb-hdrc.1.auto`, matching the values observed in stock recovery; USB gadget operation in TWRP remains unverified.
+- The device config now points TWRP brightness control at `/sys/class/backlight/sprd_backlight/brightness` with maximum 4095. The default value 2048 is a provisional midpoint, not a measured stock default.
 - TWRP-specific backup flags now expose `boot`, `vendor_boot`, `dtbo`, vbmeta partitions, `metadata`, `persist`, `misc` and microSD; their behavior has not yet been verified in a running recovery.
 - AVB/rollback configuration, data decryption, and recovery boot behavior remain to be validated.
 
@@ -38,7 +39,7 @@ Checked items are completed by repository/static checks; unchecked items still n
 - [ ] Verify /data decryption on the installed Android 13 firmware.
 - [ ] Resolve and verify AVB / rollback-index behavior.
 - [ ] Confirm the exact DTBO touchscreen overlay and active touchscreen driver.
-- [ ] Determine `TW_BRIGHTNESS_PATH` and `TW_MAX_BRIGHTNESS` from `/sys/class/backlight/`.
+- [x] Set `TW_BRIGHTNESS_PATH` and `TW_MAX_BRIGHTNESS` from the observed `/sys/class/backlight/sprd_backlight/` node (runtime brightness control still needs testing).
 - [ ] Confirm which slot has kernel vermagic `5.4.254-android12-9-…-ab1584`; do not test the image against the `ab1209` kernel.
 - [ ] Back up both `vendor_boot_a` and `vendor_boot_b` before any flash test.
 - [ ] Resolve whether the Unisoc bootloader starts both PLATFORM and RECOVERY fragments, and validate AVB/vbmeta behavior.
