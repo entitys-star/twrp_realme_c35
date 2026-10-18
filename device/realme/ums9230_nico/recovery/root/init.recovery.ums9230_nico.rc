@@ -1,10 +1,11 @@
 # Board-specific recovery properties for the Unisoc USB gadget.
 #
-# Values observed in the stock RMX3511 recovery environment:
+# Values observed via getprop in the stock Android environment:
 #   sys.usb.configfs=1
 #   sys.usb.controller=musb-hdrc.1.auto
 #
-# Set these during init so TWRP's USB configuration uses ConfigFS and the
+# These values have not been independently verified in stock recovery.
+# Set them during init so TWRP's USB configuration uses ConfigFS and the
 # actual MUSB UDC instead of the legacy android_usb path.
 on init
     setprop sys.usb.configfs 1
