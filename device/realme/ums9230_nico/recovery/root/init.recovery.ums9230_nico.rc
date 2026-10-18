@@ -1,6 +1,11 @@
-# Intentionally minimal TWRP board init.
+# Board-specific recovery properties for the Unisoc USB gadget.
 #
-# The stock init.recovery.ums9230_nico.rc imports init.recovery.common.rc,
-# which starts the stock Unisoc USB/configfs gadget and vendor services. That
-# conflicts with TWRP's own init.recovery.usb.rc. Keep this board-specific file
-# present for init's ro.hardware import, but let TWRP own service and USB setup.
+# Values observed in the stock RMX3511 recovery environment:
+#   sys.usb.configfs=1
+#   sys.usb.controller=musb-hdrc.1.auto
+#
+# Set these during init so TWRP's USB configuration uses ConfigFS and the
+# actual MUSB UDC instead of the legacy android_usb path.
+on init
+    setprop sys.usb.configfs 1
+    setprop sys.usb.controller musb-hdrc.1.auto
