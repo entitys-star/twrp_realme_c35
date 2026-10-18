@@ -5,6 +5,8 @@
 #   sys.usb.controller=musb-hdrc.1.auto
 #
 # These values have not been independently verified in stock recovery.
+# They select the USB configuration path; they do not by themselves prove
+# that the ConfigFS gadget and FunctionFS services initialize successfully.
 # Set them during init so TWRP's USB configuration uses ConfigFS and the
 # actual MUSB UDC instead of the legacy android_usb path.
 on init
