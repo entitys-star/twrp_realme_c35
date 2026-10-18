@@ -48,6 +48,12 @@ BOARD_FLASH_BLOCK_SIZE := 262144
 BOARD_INCLUDE_RECOVERY_RAMDISK_IN_VENDOR_BOOT := true
 BOARD_MOVE_RECOVERY_RESOURCES_TO_VENDOR_BOOT := true
 
+# Stock DRM/backlight sysfs node observed on RMX3511.
+TW_BRIGHTNESS_PATH := "/sys/class/backlight/sprd_backlight/brightness"
+TW_MAX_BRIGHTNESS := 4095
+# Half of the reported stock range; adjust after the first successful boot if needed.
+TW_DEFAULT_BRIGHTNESS := 2048
+
 TARGET_RECOVERY_PIXEL_FORMAT := RGBX_8888
 TARGET_SCREEN_WIDTH := 1080
 TARGET_SCREEN_HEIGHT := 2408
