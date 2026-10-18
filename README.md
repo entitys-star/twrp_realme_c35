@@ -4,7 +4,7 @@ This branch is dedicated to building a real source-built TWRP recovery for the R
 
 ## Status
 
-A source-built TWRP image was produced and the first on-device test bootlooped. The failure exposed a packaging error: the generated AOSP `platform` vendor-ramdisk fragment had replaced the stock vendor runtime. The workflow now preserves the stock `platform` fragment, DTB and bootconfig, and merges only the TWRP `recovery` fragment into the original v4 image. The corrected merged image still needs a device boot test.
+A source-built TWRP image was produced. The first test exposed a packaging error: the generated AOSP `platform` vendor-ramdisk fragment had replaced the stock vendor runtime. The merge was corrected to preserve the stock `platform` fragment, DTB and bootconfig and add only TWRP's `recovery` fragment. On-device testing of that merged image confirms normal Android still boots, but entering recovery hangs at the Realme logo and TWRP UI never appears. The cause is not yet confirmed.
 
 - Device recovery lives in `vendor_boot.img`; there is no dedicated recovery partition.
 - The raw AOSP-generated `vendor_boot.img` must not be flashed directly; use only the merged final image from the corrected workflow.
