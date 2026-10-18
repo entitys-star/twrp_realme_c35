@@ -25,7 +25,7 @@ jobs:
       - name: Free runner disk space
         uses: easimon/maximize-build-space@v10
         with:
-          root-reserve-mb: 512
+          root-reserve-mb: 4096
           swap-size-mb: 1024
           remove-dotnet: 'true'
           remove-haskell: 'true'
@@ -40,8 +40,16 @@ jobs:
           path: twrp-source/.repo
           key: twrp-source-repo-${{ runner.os }}-twrp-12.1-v1
 
+      - name: Check disk space before installing dependencies
+        run: |
+          df -h /
+          df -h "$GITHUB_WORKSPACE" "$RUNNER_TEMP"
+          df -i /
+
       - name: Install build dependencies
         run: |
+          sudo apt-get clean
+          sudo rm -rf /var/lib/apt/lists/*
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
             bc bison build-essential ccache curl cpio flex g++-multilib gcc-multilib \
