@@ -33,6 +33,9 @@ jobs:
           remove-docker-images: 'true'
           remove-android: 'true'
 
+      - name: Show disk space
+        run: df -h / "$GITHUB_WORKSPACE"
+
       - name: Restore TWRP repo metadata
         id: repo-cache
         uses: actions/cache/restore@v4
