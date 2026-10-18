@@ -1,10 +1,6 @@
 name: Build TWRP vendor_boot (RMX3511)
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'device/realme/ums9230_nico/**'
   workflow_dispatch:
     inputs:
       vendor_boot_url:
